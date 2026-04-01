@@ -1,40 +1,43 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
+import Layout from './components/Layout/Layout';
 import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
 
-// só pra teste
-function Dashboard() {
-  return (
-      <div style={{ padding: '20px' }}>
-        <h1>🎉 Dashboard PromoChef</h1>
-        <p>Bem-vindo ao sistema! Autenticação funcionou!</p>
-      </div>
-  );
-}
+// Serão feitas nas próximas Sprints é só para estruturar tudo.
+function Importacao() { return <div><h2>📥 Importação</h2></div>; }
+function Alertas() { return <div><h2>🔔 Alertas</h2></div>; }
+function Promocoes() { return <div><h2>🏷️ Promoções</h2></div>; }
+function Relatorios() { return <div><h2>📈 Relatórios</h2></div>; }
+function Usuarios() { return <div><h2>👥 Usuários (ADMIN)</h2></div>; }
+function Configuracoes() { return <div><h2>⚙️ Configurações (ADMIN)</h2></div>; }
 
 function App() {
   return (
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            {/*públicas */}
             <Route path="/login" element={<Login />} />
 
-            {/* protegidas */}
             <Route
-                path="/dashboard"
+                path="/"
                 element={
                   <PrivateRoute>
-                    <Dashboard />
+                    <Layout title="Dashboard" />
                   </PrivateRoute>
                 }
-            />
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="importacao" element={<Importacao />} />
+              <Route path="alertas" element={<Alertas />} />
+              <Route path="promocoes" element={<Promocoes />} />
+              <Route path="relatorios" element={<Relatorios />} />
+              <Route path="usuarios" element={<Usuarios />} />
+              <Route path="configuracoes" element={<Configuracoes />} />
+            </Route>
 
-            {/* Redirecionar raiz para dashboard */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
-            {/* 404 */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </BrowserRouter>
