@@ -1,0 +1,6 @@
+nome_ingrediente,unidade,quantidade,custo_unitario,data_validade,numero_lote,observacao
+Pão de Hambúrguer,un,100,0.85,2026-04-10,LOT-001,Fornecedor: Padaria Central
+Carne Bovina,kg,20,35.00,2026-04-05,LOT-002,Vence em breve
+Queijo Mussarela,kg,15,42.00,2026-04-03,LOT-003,Atenção!
+Tomate,kg,30,8.50,2026-04-06,LOT-004,Safra recente
+Laranja,kg,50,4.50,2026-04-15,LOT-005,Safra recente
