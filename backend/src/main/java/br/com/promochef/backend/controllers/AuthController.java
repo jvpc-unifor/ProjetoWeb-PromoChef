@@ -2,7 +2,7 @@ package br.com.promochef.backend.controllers;
 
 import br.com.promochef.backend.dto.LoginRequest;
 import br.com.promochef.backend.dto.LoginResponse;
-import br.com.promochef.backend.entities.Usuario;
+import br.com.promochef.backend.models.Usuario;
 import br.com.promochef.backend.security.JwtUtil;
 import br.com.promochef.backend.services.CustomUserDetailsService;
 import jakarta.validation.Valid;

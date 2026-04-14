@@ -1,4 +1,4 @@
-package br.com.promochef.backend.entities;
+package br.com.promochef.backend.models;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -12,19 +12,19 @@ export default function Sidebar() {
     };
 
     const menuComum = [
-        { path: '/dashboard', label: '📊 Dashboard', icon: '📊' },
-        { path: '/importacao', label: '📥 Importação', icon: '📥' },
-        { path: '/alertas', label: '🔔 Alertas', icon: '🔔', badge: 3 },
+        { path: '/dashboard', label: 'Dashboard', icon: '📊' },
+        { path: '/importacao', label: 'Importação', icon: '📥' },
+        { path: '/alertas', label: 'Alertas', icon: '🔔', badge: 3 },
     ];
 
     const menuAdmin = [
-        { path: '/usuarios', label: '👥 Usuários', icon: '👥' },
-        { path: '/configuracoes', label: '⚙️ Configurações', icon: '⚙️' },
+        { path: '/usuarios', label: 'Usuários', icon: '👥' },
+        { path: '/configuracoes', label: 'Configurações', icon: '⚙️' },
     ];
 
     const menuGerente = [
-        { path: '/promocoes', label: '🏷️ Promoções', icon: '🏷️', badge: 2 },
-        { path: '/relatorios', label: '📈 Relatórios', icon: '📈' },
+        { path: '/promocoes', label: 'Promoções', icon: '🏷️', badge: 2 },
+        { path: '/relatorios', label: 'Relatórios', icon: '📈' },
     ];
 
     const menuPerfil = user?.tipo === 'ADMIN' ? menuAdmin : menuGerente;

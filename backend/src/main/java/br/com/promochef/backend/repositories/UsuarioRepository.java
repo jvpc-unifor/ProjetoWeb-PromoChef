@@ -1,6 +1,6 @@
 package br.com.promochef.backend.repositories;
 
-import br.com.promochef.backend.entities.Usuario;
+import br.com.promochef.backend.models.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

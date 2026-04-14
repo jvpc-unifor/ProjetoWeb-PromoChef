@@ -1,4 +1,4 @@
-package br.com.promochef.backend.entities;
+package br.com.promochef.backend.models;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Collections;
 
 @Entity
 @Table(name = "tb_usuario")
@@ -43,7 +44,7 @@ public class Usuario implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + tipo.name()));
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + tipo.name()));
     }
 
     @Override
