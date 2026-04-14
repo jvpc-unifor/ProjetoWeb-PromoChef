@@ -2,30 +2,26 @@ package br.com.promochef.backend.services;
 
 import br.com.promochef.backend.dto.ImportacaoLinhaErro;
 import br.com.promochef.backend.dto.ImportacaoResponse;
+import br.com.promochef.backend.etl.extractors.CsvExtractor;
+import br.com.promochef.backend.etl.transformers.DataTransformer;
 import br.com.promochef.backend.models.Ingrediente;
 import br.com.promochef.backend.models.Lote;
 import br.com.promochef.backend.models.Produto;
 import br.com.promochef.backend.repositories.IngredienteRepository;
 import br.com.promochef.backend.repositories.ProdutoRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -37,6 +33,12 @@ public class ImportacaoService {
     @Autowired
     private IngredienteRepository ingredienteRepository;
 
+    @Autowired
+    private CsvExtractor csvExtractor;
+
+    @Autowired
+    private DataTransformer dataTransformer;
+
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Transactional
@@ -45,46 +47,40 @@ public class ImportacaoService {
         int totalLinhas = 0;
         int linhasSucesso = 0;
 
-        try (Reader reader = new InputStreamReader(arquivo.getInputStream(), StandardCharsets.UTF_8);
-             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
+        try {
+            List<Map<String, String>> registros = csvExtractor.extract(arquivo.getInputStream());
+            totalLinhas = registros.size();
 
-            for (CSVRecord record : csvParser) {
-                totalLinhas++;
-                long numeroLinha = record.getRecordNumber() + 1; // +1 por causa do header
+            for (int i = 0; i < registros.size(); i++) {
+                Map<String, String> record = registros.get(i);
+                long numeroLinha = i + 2; // +1 zero-index, +1 header
 
                 try {
-                    String nome = getValor(record, "nome");
-                    if (nome == null || nome.trim().isEmpty()) {
-                        erros.add(criarErro(numeroLinha, "nome", getValor(record, "nome"), "Campo obrigatório"));
+                    String nome = dataTransformer.normalizeText(record.get("nome"));
+                    if (nome.isEmpty()) {
+                        erros.add(criarErro(numeroLinha, "nome", "", "Campo obrigatório"));
                         continue;
                     }
 
-                    String precoStr = getValor(record, "preco");
-                    if (precoStr == null || precoStr.trim().isEmpty()) {
-                        erros.add(criarErro(numeroLinha, "preco", precoStr, "Campo obrigatório"));
+                    String precoStr = record.get("preco");
+                    BigDecimal preco = dataTransformer.parseToDecimal(precoStr);
+                    if (preco == null) {
+                        erros.add(criarErro(numeroLinha, "preco", precoStr, "Formato inválido ou vazio"));
                         continue;
                     }
 
-                    BigDecimal preco;
-                    try {
-                        preco = new BigDecimal(precoStr.replace(",", "."));
-                    } catch (NumberFormatException e) {
-                        erros.add(criarErro(numeroLinha, "preco", precoStr, "Formato inválido (use 10.50 ou 10,50)"));
-                        continue;
-                    }
-
-                    String categoria = getValor(record, "categoria");
-                    if (categoria == null || categoria.trim().isEmpty()) {
-                        erros.add(criarErro(numeroLinha, "categoria", categoria, "Campo obrigatório"));
+                    String categoria = dataTransformer.normalizeText(record.get("categoria"));
+                    if (categoria.isEmpty()) {
+                        erros.add(criarErro(numeroLinha, "categoria", "", "Campo obrigatório"));
                         continue;
                     }
 
                     // Criar e salvar produto
                     Produto produto = new Produto();
-                    produto.setNome(nome.trim());
-                    produto.setDescricao(getValor(record, "descricao"));
+                    produto.setNome(nome);
+                    produto.setDescricao(dataTransformer.normalizeText(record.get("descricao")));
                     produto.setPreco(preco);
-                    produto.setCategoria(categoria.trim());
+                    produto.setCategoria(categoria);
                     produto.setAtivo(true);
 
                     produtoRepository.save(produto);
@@ -103,7 +99,7 @@ public class ImportacaoService {
                     .totalLinhas(totalLinhas)
                     .linhasSucesso(0)
                     .linhasErro(1)
-                    .mensagem("Erro ao processar arquivo: " + e.getMessage())
+                    .mensagem("Erro ao ler CSV: " + e.getMessage())
                     .erros(erros)
                     .build();
         }
@@ -125,77 +121,57 @@ public class ImportacaoService {
         int totalLinhas = 0;
         int linhasSucesso = 0;
 
-        try (Reader reader = new InputStreamReader(arquivo.getInputStream(), StandardCharsets.UTF_8);
-             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
+        try {
+            List<Map<String, String>> registros = csvExtractor.extract(arquivo.getInputStream());
+            totalLinhas = registros.size();
 
-            for (CSVRecord record : csvParser) {
-                totalLinhas++;
-                long numeroLinha = record.getRecordNumber() + 1;
+            for (int i = 0; i < registros.size(); i++) {
+                Map<String, String> record = registros.get(i);
+                long numeroLinha = i + 2;
 
                 try {
-                    // Validação de campos obrigatórios
-                    String nomeIngrediente = getValor(record, "nome_ingrediente");
-                    if (nomeIngrediente == null || nomeIngrediente.trim().isEmpty()) {
-                        erros.add(criarErro(numeroLinha, "nome_ingrediente", getValor(record, "nome_ingrediente"), "Campo obrigatório"));
+                    String nomeIngrediente = dataTransformer.normalizeText(record.get("nome_ingrediente"));
+                    if (nomeIngrediente.isEmpty()) {
+                        erros.add(criarErro(numeroLinha, "nome_ingrediente", "", "Campo obrigatório"));
                         continue;
                     }
 
-                    String unidade = getValor(record, "unidade");
-                    if (unidade == null || unidade.trim().isEmpty()) {
-                        erros.add(criarErro(numeroLinha, "unidade", unidade, "Campo obrigatório"));
+                    String unidade = dataTransformer.normalizeText(record.get("unidade"));
+                    if (unidade.isEmpty()) {
+                        erros.add(criarErro(numeroLinha, "unidade", "", "Campo obrigatório"));
                         continue;
                     }
 
-                    String quantidadeStr = getValor(record, "quantidade");
-                    if (quantidadeStr == null || quantidadeStr.trim().isEmpty()) {
-                        erros.add(criarErro(numeroLinha, "quantidade", quantidadeStr, "Campo obrigatório"));
+                    String quantidadeStr = record.get("quantidade");
+                    BigDecimal quantidade = dataTransformer.parseToDecimal(quantidadeStr);
+                    if (quantidade == null) {
+                        erros.add(criarErro(numeroLinha, "quantidade", quantidadeStr, "Formato numérico inválido"));
                         continue;
                     }
 
-                    String custoStr = getValor(record, "custo_unitario");
-                    if (custoStr == null || custoStr.trim().isEmpty()) {
-                        erros.add(criarErro(numeroLinha, "custo_unitario", custoStr, "Campo obrigatório"));
+                    String custoStr = record.get("custo_unitario");
+                    BigDecimal custoUnitario = dataTransformer.parseToDecimal(custoStr);
+                    if (custoUnitario == null) {
+                        erros.add(criarErro(numeroLinha, "custo_unitario", custoStr, "Formato numérico inválido"));
                         continue;
                     }
 
-                    String dataValidadeStr = getValor(record, "data_validade");
-                    if (dataValidadeStr == null || dataValidadeStr.trim().isEmpty()) {
-                        erros.add(criarErro(numeroLinha, "data_validade", dataValidadeStr, "Campo obrigatório"));
-                        continue;
-                    }
-
-                    BigDecimal quantidade;
-                    try {
-                        quantidade = new BigDecimal(quantidadeStr.replace(",", "."));
-                    } catch (NumberFormatException e) {
-                        erros.add(criarErro(numeroLinha, "quantidade", quantidadeStr, "Formato inválido"));
-                        continue;
-                    }
-
-                    BigDecimal custoUnitario;
-                    try {
-                        custoUnitario = new BigDecimal(custoStr.replace(",", "."));
-                    } catch (NumberFormatException e) {
-                        erros.add(criarErro(numeroLinha, "custo_unitario", custoStr, "Formato inválido"));
-                        continue;
-                    }
-
-                    // Parse da data
+                    String dataValidadeStr = record.get("data_validade");
                     LocalDate dataValidade;
                     try {
-                        dataValidade = LocalDate.parse(dataValidadeStr, DATE_FORMAT);
+                        dataValidade = LocalDate.parse(dataTransformer.normalizeText(dataValidadeStr), DATE_FORMAT);
                     } catch (DateTimeParseException e) {
                         erros.add(criarErro(numeroLinha, "data_validade", dataValidadeStr, "Formato inválido (use AAAA-MM-DD)"));
                         continue;
                     }
 
                     // Buscar ou criar ingrediente
-                    Ingrediente ingrediente = ingredienteRepository.findByNome(nomeIngrediente.trim())
+                    Ingrediente ingrediente = ingredienteRepository.findByNome(nomeIngrediente)
                             .orElseGet(() -> {
                                 Ingrediente novoIngrediente = new Ingrediente();
-                                novoIngrediente.setNome(nomeIngrediente.trim());
-                                novoIngrediente.setUnidade(unidade.trim());
-                                novoIngrediente.setEstoqueMinimo(new BigDecimal("0"));
+                                novoIngrediente.setNome(nomeIngrediente);
+                                novoIngrediente.setUnidade(unidade);
+                                novoIngrediente.setEstoqueMinimo(BigDecimal.ZERO);
                                 return ingredienteRepository.save(novoIngrediente);
                             });
 
@@ -206,8 +182,8 @@ public class ImportacaoService {
                     lote.setCustoUnitario(custoUnitario);
                     lote.setDataValidade(dataValidade);
                     lote.setDataEntrada(LocalDate.now());
-                    lote.setNumeroLote(getValor(record, "numero_lote"));
-                    lote.setObservacao(getValor(record, "observacao"));
+                    lote.setNumeroLote(dataTransformer.normalizeText(record.get("numero_lote")));
+                    lote.setObservacao(dataTransformer.normalizeText(record.get("observacao")));
 
                     ingredienteRepository.saveLote(lote);
                     linhasSucesso++;
@@ -239,15 +215,6 @@ public class ImportacaoService {
                 .mensagem(sucesso ? "Importação com sucesso!" : "Importação com erros")
                 .erros(erros)
                 .build();
-    }
-
-    //
-    private String getValor(CSVRecord record, String coluna) {
-        try {
-            return record.get(coluna);
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
     }
 
     private ImportacaoLinhaErro criarErro(long linha, String campo, String valor, String motivo) {
