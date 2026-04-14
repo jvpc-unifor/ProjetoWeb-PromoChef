@@ -3,6 +3,7 @@ package br.com.promochef.backend.services;
 import br.com.promochef.backend.dto.ImportacaoLinhaErro;
 import br.com.promochef.backend.dto.ImportacaoResponse;
 import br.com.promochef.backend.etl.extractors.CsvExtractor;
+import br.com.promochef.backend.etl.extractors.PdvExtractor;
 import br.com.promochef.backend.etl.transformers.DataTransformer;
 import br.com.promochef.backend.models.Ingrediente;
 import br.com.promochef.backend.models.Lote;
@@ -35,6 +36,9 @@ public class ImportacaoService {
 
     @Autowired
     private CsvExtractor csvExtractor;
+
+    @Autowired
+    private PdvExtractor pdvExtractor;
 
     @Autowired
     private DataTransformer dataTransformer;
@@ -377,6 +381,98 @@ public class ImportacaoService {
         return ImportacaoResponse.builder()
                 .sucesso(erros.isEmpty()).totalLinhas(totalLinhas).linhasSucesso(linhasSucesso).linhasErro(erros.size())
                 .mensagem(erros.isEmpty() ? "Sucesso" : "Erros encontrados").erros(erros).build();
+    }
+
+    @Transactional
+    public ImportacaoResponse importarDadosDoPdv() {
+        List<ImportacaoLinhaErro> erros = new ArrayList<>();
+        int totalLinhas = 0;
+        int linhasSucesso = 0;
+
+        try {
+            List<Map<String, String>> produtosPdv = pdvExtractor.extract("SELECT * FROM pdv_produto");
+            totalLinhas += produtosPdv.size();
+            for (Map<String, String> record : produtosPdv) {
+                try {
+                    String nome = dataTransformer.normalizeText(record.get("nome"));
+                    String precoStr = record.get("preco_venda");
+                    BigDecimal preco = dataTransformer.parseToDecimal(precoStr);
+                    String categoria = dataTransformer.normalizeText(record.get("categoria"));
+                    
+                    if (nome.isEmpty() || preco == null || categoria.isEmpty()) continue;
+
+                    Produto produto = new Produto();
+                    produto.setNome(nome);
+                    produto.setPreco(preco);
+                    produto.setCategoria(categoria);
+                    produto.setAtivo(true);
+                    dataLoader.loadProduto(produto);
+                    linhasSucesso++;
+                } catch (Exception e) {
+                    log.error("Erro importando produto do PDV: ", e);
+                }
+            }
+
+            // Extração de Vendas do PDV com JOIN para já trazer o nome
+            List<Map<String, String>> vendasPdv = pdvExtractor.extract(
+                "SELECT pv.*, p.nome as nome_produto FROM pdv_venda pv JOIN pdv_produto p ON pv.produto_id = p.id"
+            );
+            totalLinhas += vendasPdv.size();
+            for (Map<String, String> record : vendasPdv) {
+                try {
+                    String nomeProduto = dataTransformer.normalizeText(record.get("nome_produto"));
+                    String strQtd = record.get("quantidade");
+                    BigDecimal qtd = dataTransformer.parseToDecimal(strQtd);
+                    
+                    String dataOriginal = record.get("data_venda");
+                    if (dataOriginal != null && dataOriginal.length() >= 10) {
+                        dataOriginal = dataOriginal.substring(0, 10);
+                    }
+                    
+                    if (nomeProduto.isEmpty() || dataOriginal == null || qtd == null) continue;
+                    
+                    LocalDate dataVal;
+                    try {
+                        dataVal = LocalDate.parse(dataOriginal, DATE_FORMAT);
+                    } catch (DateTimeParseException e) {
+                        continue;
+                    }
+
+                    Produto produto = dataLoader.getProdutoByNome(nomeProduto);
+                    if (produto == null) continue;
+
+                    Venda venda = new Venda();
+                    venda.setDataVenda(dataVal);
+                    // O preço e a quantidade definem o valor total de forma padronizada
+                    BigDecimal total = produto.getPreco().multiply(qtd);
+                    venda.setValorTotal(total);
+
+                    ItemVenda iv = new ItemVenda();
+                    iv.setVenda(venda);
+                    iv.setProduto(produto);
+                    iv.setQuantidade(qtd.intValue());
+                    iv.setPrecoUnitario(produto.getPreco());
+
+                    venda.getItens().add(iv);
+                    dataLoader.loadVenda(venda);
+                    linhasSucesso++;
+                } catch (Exception e) {
+                    log.error("Erro importando venda do PDV: ", e);
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("Erro geral na integração com PDV", e);
+            erros.add(criarErro(1, "pdv", null, "Falha ao se conectar/extrair do PDV: " + e.getMessage()));
+            return ImportacaoResponse.builder()
+                    .sucesso(false).totalLinhas(totalLinhas).linhasErro(erros.size()).linhasSucesso(linhasSucesso)
+                    .mensagem("Falha na integração com o PDV").erros(erros).build();
+        }
+
+        return ImportacaoResponse.builder()
+                .sucesso(true).totalLinhas(totalLinhas).linhasSucesso(linhasSucesso).linhasErro(erros.size())
+                .mensagem("Integração PDV finalizada com sucesso! Foram processados " + linhasSucesso + " registros.")
+                .erros(erros).build();
     }
 
     private ImportacaoLinhaErro criarErro(long linha, String campo, String valor, String motivo) {

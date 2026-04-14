@@ -118,4 +118,15 @@ public class ImportacaoController {
         ImportacaoResponse response = importacaoService.importarVendas(arquivo);
         return response.isSucesso() ? ResponseEntity.ok(response) : ResponseEntity.status(400).body(response);
     }
+
+    @PostMapping(value = "/pdv")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
+    public ResponseEntity<ImportacaoResponse> importarPdv() {
+        ImportacaoResponse response = importacaoService.importarDadosDoPdv();
+        if (response.isSucesso()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(400).body(response);
+        }
+    }
 }
