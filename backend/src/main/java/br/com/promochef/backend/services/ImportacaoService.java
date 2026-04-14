@@ -11,10 +11,7 @@ import br.com.promochef.backend.models.FichaTecnica;
 import br.com.promochef.backend.models.FichaTecnicaId;
 import br.com.promochef.backend.models.Venda;
 import br.com.promochef.backend.models.ItemVenda;
-import br.com.promochef.backend.repositories.IngredienteRepository;
-import br.com.promochef.backend.repositories.ProdutoRepository;
-import br.com.promochef.backend.repositories.FichaTecnicaRepository;
-import br.com.promochef.backend.repositories.VendaRepository;
+import br.com.promochef.backend.etl.loaders.DataLoader;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,16 +31,7 @@ import java.util.Map;
 public class ImportacaoService {
 
     @Autowired
-    private ProdutoRepository produtoRepository;
-
-    @Autowired
-    private IngredienteRepository ingredienteRepository;
-
-    @Autowired
-    private FichaTecnicaRepository fichaTecnicaRepository;
-
-    @Autowired
-    private VendaRepository vendaRepository;
+    private DataLoader dataLoader;
 
     @Autowired
     private CsvExtractor csvExtractor;
@@ -95,7 +83,7 @@ public class ImportacaoService {
                     produto.setCategoria(categoria);
                     produto.setAtivo(true);
 
-                    produtoRepository.save(produto);
+                    dataLoader.loadProduto(produto);
                     linhasSucesso++;
 
                 } catch (Exception e) {
@@ -178,14 +166,14 @@ public class ImportacaoService {
                     }
 
                     // Buscar ou criar ingrediente
-                    Ingrediente ingrediente = ingredienteRepository.findByNome(nomeIngrediente)
-                            .orElseGet(() -> {
-                                Ingrediente novoIngrediente = new Ingrediente();
-                                novoIngrediente.setNome(nomeIngrediente);
-                                novoIngrediente.setUnidade(unidade);
-                                novoIngrediente.setEstoqueMinimo(BigDecimal.ZERO);
-                                return ingredienteRepository.save(novoIngrediente);
-                            });
+                    Ingrediente ingrediente = dataLoader.getIngredienteByNome(nomeIngrediente);
+                    if (ingrediente == null) {
+                        Ingrediente novoIngrediente = new Ingrediente();
+                        novoIngrediente.setNome(nomeIngrediente);
+                        novoIngrediente.setUnidade(unidade);
+                        novoIngrediente.setEstoqueMinimo(BigDecimal.ZERO);
+                        ingrediente = dataLoader.loadIngrediente(novoIngrediente);
+                    }
 
                     // Criar lote
                     Lote lote = new Lote();
@@ -197,7 +185,7 @@ public class ImportacaoService {
                     lote.setNumeroLote(dataTransformer.normalizeText(record.get("numero_lote")));
                     lote.setObservacao(dataTransformer.normalizeText(record.get("observacao")));
 
-                    ingredienteRepository.saveLote(lote);
+                    dataLoader.loadLote(lote);
                     linhasSucesso++;
 
                 } catch (Exception e) {
@@ -267,13 +255,13 @@ public class ImportacaoService {
                         continue;
                     }
 
-                    Produto produto = produtoRepository.findByNome(nomeProduto).orElse(null);
+                    Produto produto = dataLoader.getProdutoByNome(nomeProduto);
                     if (produto == null) {
                         erros.add(criarErro(numeroLinha, "nome_produto", nomeProduto, "Produto não encontrado"));
                         continue;
                     }
 
-                    Ingrediente ingrediente = ingredienteRepository.findByNome(nomeIngrediente).orElse(null);
+                    Ingrediente ingrediente = dataLoader.getIngredienteByNome(nomeIngrediente);
                     if (ingrediente == null) {
                         erros.add(criarErro(numeroLinha, "nome_ingrediente", nomeIngrediente, "Ingrediente não encontrado"));
                         continue;
@@ -287,7 +275,7 @@ public class ImportacaoService {
                     ft.setQuantidadeUsada(quantidade);
                     ft.setUnidade(unidade);
 
-                    fichaTecnicaRepository.save(ft);
+                    dataLoader.loadFichaTecnica(ft);
                     linhasSucesso++;
                 } catch (Exception e) {
                     log.error("Erro na leitura da linha {}", numeroLinha, e);
@@ -317,7 +305,10 @@ public class ImportacaoService {
             List<Map<String, String>> registros = csvExtractor.extract(arquivo.getInputStream());
             totalLinhas = registros.size();
 
-            // Como as vendas agrupam itens, se vier 1 item por linha, podemos agrupar, mas neste modelo simplificado a gente cria uma venda separada para cada linha caso falte uma lógica de ID de cupom. Só para fazer uma demonstração, a gente cria uma nova Venda por registro.
+            // Como as vendas agrupam itens, se vier 1 item por linha,
+            // podemos agrupar, mas neste modelo simplificado criaremos
+            // uma venda separada para cada linha caso falte uma lógica de ID de cupom.
+            // Para simplicidade de demonstração, criamos uma nova Venda por registro.
 
             for (int i = 0; i < registros.size(); i++) {
                 Map<String, String> record = registros.get(i);
@@ -347,7 +338,7 @@ public class ImportacaoService {
                         continue;
                     }
 
-                    Produto produto = produtoRepository.findByNome(nomeProduto).orElse(null);
+                    Produto produto = dataLoader.getProdutoByNome(nomeProduto);
                     if (produto == null) {
                         erros.add(criarErro(numeroLinha, "nome_produto", nomeProduto, "Produto não encontrado"));
                         continue;
@@ -355,7 +346,7 @@ public class ImportacaoService {
 
                     Venda venda = new Venda();
                     venda.setDataVenda(dataVal);
-                    // preço unitário da venda = o preço vigente do produto x quantidade
+                    // preço unitario da venda = o preço vigente do produto x quantidade
                     BigDecimal total = produto.getPreco().multiply(qtd);
                     venda.setValorTotal(total);
 
@@ -366,7 +357,7 @@ public class ImportacaoService {
                     iv.setPrecoUnitario(produto.getPreco());
 
                     venda.getItens().add(iv);
-                    vendaRepository.save(venda);
+                    dataLoader.loadVenda(venda);
 
                     linhasSucesso++;
                 } catch (Exception e) {
