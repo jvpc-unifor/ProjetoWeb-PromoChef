@@ -4,9 +4,9 @@ import PrivateRoute from './components/PrivateRoute';
 import Layout from './components/Layout/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Importacao from './pages/Importacao/Importacao';
 
 // Serão feitas nas próximas Sprints é só para estruturar tudo.
-function Importacao() { return <div><h2>📥 Importação</h2></div>; }
 function Alertas() { return <div><h2>🔔 Alertas</h2></div>; }
 function Promocoes() { return <div><h2>🏷️ Promoções</h2></div>; }
 function Relatorios() { return <div><h2>📈 Relatórios</h2></div>; }

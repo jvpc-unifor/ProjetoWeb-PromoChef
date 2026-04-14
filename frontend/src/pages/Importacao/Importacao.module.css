@@ -1,0 +1,234 @@
+.container {
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.header h2 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.header p {
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 0.5rem;
+}
+
+.tabBtn {
+    background: none;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.tabBtn:hover {
+    background: #f1f5f9;
+    color: #333;
+}
+
+.tabBtn.active {
+    background: #f97316; /* Laranja da paleta principal */
+    color: white;
+}
+
+.content {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.dropzone {
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 4rem 2rem;
+    text-align: center;
+    background: #f8fafc;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.dropzone:hover {
+    border-color: #f97316;
+    background: #fffafa;
+}
+
+.dropzone.hasFile {
+    background: white;
+    border-color: #10b981;
+}
+
+.browseBtn {
+    background: white;
+    border: 1px solid #cbd5e1;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.browseBtn:hover {
+    background: #f1f5f9;
+}
+
+.fileSelectedInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.fileName {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #334155;
+    margin: 0;
+}
+
+.fileSize {
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+.actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.uploadBtn {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.uploadBtn:hover:not(:disabled) {
+    background: #059669;
+}
+
+.uploadBtn:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+}
+
+.clearBtn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.clearBtn:hover:not(:disabled) {
+    background: #dc2626;
+}
+
+/* Result Card */
+.resultCard {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border-radius: 8px;
+    background: #f1f5f9;
+}
+
+.resultCard.success {
+    background: #ecfdf5;
+    border-left: 4px solid #10b981;
+}
+
+.resultCard.error {
+    background: #fef2f2;
+    border-left: 4px solid #ef4444;
+}
+
+.resultCard h3 {
+    margin: 0 0 1rem 0;
+}
+
+.stats {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.statBox {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: white;
+    padding: 1rem;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    min-width: 120px;
+    text-align: center;
+}
+
+.statBox span {
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.statBox strong {
+    font-size: 1.5rem;
+    color: #334155;
+}
+
+.txtSuccess { color: #10b981 !important; }
+.txtError { color: #ef4444 !important; }
+
+.errorList h4 {
+    margin-bottom: 1rem;
+    color: #7f1d1d;
+}
+
+.errorList table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.errorList th, .errorList td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.errorList th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #475569;
+}
+
+.badValue {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-family: monospace;
+}
