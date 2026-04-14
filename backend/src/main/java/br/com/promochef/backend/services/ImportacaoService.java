@@ -7,8 +7,14 @@ import br.com.promochef.backend.etl.transformers.DataTransformer;
 import br.com.promochef.backend.models.Ingrediente;
 import br.com.promochef.backend.models.Lote;
 import br.com.promochef.backend.models.Produto;
+import br.com.promochef.backend.models.FichaTecnica;
+import br.com.promochef.backend.models.FichaTecnicaId;
+import br.com.promochef.backend.models.Venda;
+import br.com.promochef.backend.models.ItemVenda;
 import br.com.promochef.backend.repositories.IngredienteRepository;
 import br.com.promochef.backend.repositories.ProdutoRepository;
+import br.com.promochef.backend.repositories.FichaTecnicaRepository;
+import br.com.promochef.backend.repositories.VendaRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,6 +38,12 @@ public class ImportacaoService {
 
     @Autowired
     private IngredienteRepository ingredienteRepository;
+
+    @Autowired
+    private FichaTecnicaRepository fichaTecnicaRepository;
+
+    @Autowired
+    private VendaRepository vendaRepository;
 
     @Autowired
     private CsvExtractor csvExtractor;
@@ -215,6 +227,165 @@ public class ImportacaoService {
                 .mensagem(sucesso ? "Importação com sucesso!" : "Importação com erros")
                 .erros(erros)
                 .build();
+    }
+
+    @Transactional
+    public ImportacaoResponse importarFichaTecnica(MultipartFile arquivo) {
+        List<ImportacaoLinhaErro> erros = new ArrayList<>();
+        int totalLinhas = 0;
+        int linhasSucesso = 0;
+
+        try {
+            List<Map<String, String>> registros = csvExtractor.extract(arquivo.getInputStream());
+            totalLinhas = registros.size();
+
+            for (int i = 0; i < registros.size(); i++) {
+                Map<String, String> record = registros.get(i);
+                long numeroLinha = i + 2;
+
+                try {
+                    String nomeProduto = dataTransformer.normalizeText(record.get("nome_produto"));
+                    String nomeIngrediente = dataTransformer.normalizeText(record.get("nome_ingrediente"));
+                    String strQtd = record.get("quantidade");
+                    String unidade = dataTransformer.normalizeText(record.get("unidade"));
+
+                    if (nomeProduto.isEmpty()) {
+                        erros.add(criarErro(numeroLinha, "nome_produto", "", "Campo obrigatório"));
+                        continue;
+                    }
+                    if (nomeIngrediente.isEmpty()) {
+                        erros.add(criarErro(numeroLinha, "nome_ingrediente", "", "Campo obrigatório"));
+                        continue;
+                    }
+                    BigDecimal quantidade = dataTransformer.parseToDecimal(strQtd);
+                    if (quantidade == null) {
+                        erros.add(criarErro(numeroLinha, "quantidade", strQtd, "Formato numérico inválido"));
+                        continue;
+                    }
+                    if (unidade.isEmpty()) {
+                        erros.add(criarErro(numeroLinha, "unidade", "", "Campo obrigatório"));
+                        continue;
+                    }
+
+                    Produto produto = produtoRepository.findByNome(nomeProduto).orElse(null);
+                    if (produto == null) {
+                        erros.add(criarErro(numeroLinha, "nome_produto", nomeProduto, "Produto não encontrado"));
+                        continue;
+                    }
+
+                    Ingrediente ingrediente = ingredienteRepository.findByNome(nomeIngrediente).orElse(null);
+                    if (ingrediente == null) {
+                        erros.add(criarErro(numeroLinha, "nome_ingrediente", nomeIngrediente, "Ingrediente não encontrado"));
+                        continue;
+                    }
+
+                    FichaTecnicaId id = new FichaTecnicaId(produto.getId(), ingrediente.getId());
+                    FichaTecnica ft = new FichaTecnica();
+                    ft.setId(id);
+                    ft.setProduto(produto);
+                    ft.setIngrediente(ingrediente);
+                    ft.setQuantidadeUsada(quantidade);
+                    ft.setUnidade(unidade);
+
+                    fichaTecnicaRepository.save(ft);
+                    linhasSucesso++;
+                } catch (Exception e) {
+                    log.error("Erro na leitura da linha {}", numeroLinha, e);
+                    erros.add(criarErro(numeroLinha, "geral", "", "Erro: " + e.getMessage()));
+                }
+            }
+        } catch (Exception e) {
+            log.error("Erro no import da ficha tecnica", e);
+            erros.add(criarErro(1, "arquivo", null, e.getMessage()));
+            return ImportacaoResponse.builder()
+                    .sucesso(false).totalLinhas(totalLinhas).linhasErro(erros.size()).linhasSucesso(linhasSucesso)
+                    .mensagem("Falha.").erros(erros).build();
+        }
+
+        return ImportacaoResponse.builder()
+                .sucesso(erros.isEmpty()).totalLinhas(totalLinhas).linhasSucesso(linhasSucesso).linhasErro(erros.size())
+                .mensagem(erros.isEmpty() ? "Sucesso" : "Foram encontrados erros").erros(erros).build();
+    }
+
+    @Transactional
+    public ImportacaoResponse importarVendas(MultipartFile arquivo) {
+        List<ImportacaoLinhaErro> erros = new ArrayList<>();
+        int totalLinhas = 0;
+        int linhasSucesso = 0;
+
+        try {
+            List<Map<String, String>> registros = csvExtractor.extract(arquivo.getInputStream());
+            totalLinhas = registros.size();
+
+            // Como as vendas agrupam itens, se vier 1 item por linha, podemos agrupar, mas neste modelo simplificado a gente cria uma venda separada para cada linha caso falte uma lógica de ID de cupom. Só para fazer uma demonstração, a gente cria uma nova Venda por registro.
+
+            for (int i = 0; i < registros.size(); i++) {
+                Map<String, String> record = registros.get(i);
+                long numeroLinha = i + 2;
+
+                try {
+                    String nomeProduto = dataTransformer.normalizeText(record.get("nome_produto"));
+                    String dataStr = dataTransformer.normalizeText(record.get("data_venda"));
+                    String strQtd = record.get("quantidade");
+
+                    if (nomeProduto.isEmpty() || dataStr.isEmpty() || strQtd == null) {
+                        erros.add(criarErro(numeroLinha, "geral", "", "nome_produto, data_venda e quantidade são necessários"));
+                        continue;
+                    }
+
+                    BigDecimal qtd = dataTransformer.parseToDecimal(strQtd);
+                    if (qtd == null) {
+                        erros.add(criarErro(numeroLinha, "quantidade", strQtd, "Quantidade inválida"));
+                        continue;
+                    }
+
+                    LocalDate dataVal;
+                    try {
+                        dataVal = LocalDate.parse(dataStr, DATE_FORMAT);
+                    } catch (DateTimeParseException e) {
+                        erros.add(criarErro(numeroLinha, "data_venda", dataStr, "Data inválida"));
+                        continue;
+                    }
+
+                    Produto produto = produtoRepository.findByNome(nomeProduto).orElse(null);
+                    if (produto == null) {
+                        erros.add(criarErro(numeroLinha, "nome_produto", nomeProduto, "Produto não encontrado"));
+                        continue;
+                    }
+
+                    Venda venda = new Venda();
+                    venda.setDataVenda(dataVal);
+                    // preço unitário da venda = o preço vigente do produto x quantidade
+                    BigDecimal total = produto.getPreco().multiply(qtd);
+                    venda.setValorTotal(total);
+
+                    ItemVenda iv = new ItemVenda();
+                    iv.setVenda(venda);
+                    iv.setProduto(produto);
+                    iv.setQuantidade(qtd.intValue());
+                    iv.setPrecoUnitario(produto.getPreco());
+
+                    venda.getItens().add(iv);
+                    vendaRepository.save(venda);
+
+                    linhasSucesso++;
+                } catch (Exception e) {
+                    log.error("Erro na leitura da linha {}", numeroLinha, e);
+                    erros.add(criarErro(numeroLinha, "geral", "", "Erro: " + e.getMessage()));
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("Erro ao no import da venda", e);
+            erros.add(criarErro(1, "arquivo", null, e.getMessage()));
+            return ImportacaoResponse.builder()
+                    .sucesso(false).totalLinhas(totalLinhas).linhasErro(erros.size()).linhasSucesso(linhasSucesso)
+                    .mensagem("Falha.").erros(erros).build();
+        }
+
+        return ImportacaoResponse.builder()
+                .sucesso(erros.isEmpty()).totalLinhas(totalLinhas).linhasSucesso(linhasSucesso).linhasErro(erros.size())
+                .mensagem(erros.isEmpty() ? "Sucesso" : "Erros encontrados").erros(erros).build();
     }
 
     private ImportacaoLinhaErro criarErro(long linha, String campo, String valor, String motivo) {

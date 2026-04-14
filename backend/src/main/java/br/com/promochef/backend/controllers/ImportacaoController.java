@@ -82,4 +82,40 @@ public class ImportacaoController {
             return ResponseEntity.status(400).body(response);
         }
     }
+
+    @PostMapping(value = "/ficha-tecnica", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
+    public ResponseEntity<ImportacaoResponse> importarFichaTecnica(
+            @RequestParam("arquivo") MultipartFile arquivo) throws IOException {
+
+        if (arquivo.isEmpty() || !arquivo.getOriginalFilename().endsWith(".csv")) {
+            return ResponseEntity.badRequest().body(
+                    ImportacaoResponse.builder()
+                            .sucesso(false)
+                            .mensagem("Arquivo não pode estar vazio e deve ser do tipo CSV.")
+                            .build()
+            );
+        }
+
+        ImportacaoResponse response = importacaoService.importarFichaTecnica(arquivo);
+        return response.isSucesso() ? ResponseEntity.ok(response) : ResponseEntity.status(400).body(response);
+    }
+
+    @PostMapping(value = "/vendas", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
+    public ResponseEntity<ImportacaoResponse> importarVendas(
+            @RequestParam("arquivo") MultipartFile arquivo) throws IOException {
+
+        if (arquivo.isEmpty() || !arquivo.getOriginalFilename().endsWith(".csv")) {
+            return ResponseEntity.badRequest().body(
+                    ImportacaoResponse.builder()
+                            .sucesso(false)
+                            .mensagem("Arquivo não pode estar vazio e deve ser do tipo CSV.")
+                            .build()
+            );
+        }
+
+        ImportacaoResponse response = importacaoService.importarVendas(arquivo);
+        return response.isSucesso() ? ResponseEntity.ok(response) : ResponseEntity.status(400).body(response);
+    }
 }
