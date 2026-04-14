@@ -18,6 +18,10 @@ const TABS = [
     { 
         id: 'vendas', title: 'Vendas', endpoint: '/importacao/vendas',
         templateName: 'vendas.csv', columns: ['nome_produto', 'data_venda', 'quantidade']
+    },
+    {
+        id: 'pdv', title: '⚡ Conectar PDV', endpoint: '/importacao/pdv',
+        isPdv: true
     }
 ];
 
@@ -84,6 +88,24 @@ function Importacao() {
         }
     };
 
+    const handlePdvSync = async () => {
+        setLoading(true);
+        setResult(null);
+
+        try {
+            const response = await api.post(activeTab.endpoint);
+            setResult(response.data);
+        } catch (error) {
+            if (error.response?.data) {
+                setResult(error.response.data);
+            } else {
+                setResult({ sucesso: false, mensagem: 'Erro de comunicação com o servidor', erros: [] });
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className={styles.container}>
             <div className={styles.header}>
@@ -105,62 +127,81 @@ function Importacao() {
 
             <div className={styles.splitContent}>
                 <div className={styles.instructions}>
-                    <h3>Preparando o Arquivo</h3>
-                    <p>Para importar <strong>{activeTab.title}</strong>, seu arquivo `.csv` deve obrigatoriamente possuir as seguintes colunas estruturadas na primeira linha (cabeçalho):</p>
-                    
-                    <ul className={styles.columnList}>
-                        {activeTab.columns.map((col) => (
-                            <li key={col}><code>{col}</code></li>
-                        ))}
-                    </ul>
+                    {activeTab.isPdv ? (
+                        <React.Fragment>
+                            <h3>Integração Automática com PDV</h3>
+                            <p>Ao conectar seu banco de dados, você importa os <strong>Produtos</strong> e <strong>Vendas</strong> da nossa rede automaticamente.</p>
+                            <p className={styles.tipText}>Esta operação busca e traduz de modo automático as transações diárias do restaurante. Recomendamos sincronizar todos os dias.</p>
+                        </React.Fragment>
+                    ) : (
+                        <React.Fragment>
+                            <h3>Preparando o Arquivo</h3>
+                            <p>Para importar <strong>{activeTab.title}</strong>, seu arquivo `.csv` deve obrigatoriamente possuir as seguintes colunas estruturadas na primeira linha (cabeçalho):</p>
+                            
+                            <ul className={styles.columnList}>
+                                {activeTab.columns.map((col) => (
+                                    <li key={col}><code>{col}</code></li>
+                                ))}
+                            </ul>
 
-                    <p className={styles.tipText}>Dica: Baixe nosso template em branco para preencher seus dados sem chance de erro no nome das colunas.</p>
-                    
-                    <a 
-                        href={`/templates/${activeTab.templateName}`} 
-                        download={activeTab.templateName} 
-                        className={styles.downloadTemplateBtn}
-                    >
-                        📥 Baixar Template ({activeTab.templateName})
-                    </a>
+                            <p className={styles.tipText}>Dica: Baixe nosso template em branco para preencher seus dados sem chance de erro no nome das colunas.</p>
+                            
+                            <a 
+                                href={`/templates/${activeTab.templateName}`} 
+                                download={activeTab.templateName} 
+                                className={styles.downloadTemplateBtn}
+                            >
+                                📥 Baixar Template ({activeTab.templateName})
+                            </a>
+                        </React.Fragment>
+                    )}
                 </div>
 
                 <div className={styles.uploadArea}>
-                    <div
-                        className={`${styles.dropzone} ${file ? styles.hasFile : ''}`}
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop}
-                    >
-                        {!file ? (
-                            <>
-                                <p>Arraste o arquivo CSV de <b>{activeTab.title}</b> para cá</p>
-                                <span>ou</span>
-                                <button className={styles.browseBtn} onClick={() => fileInputRef.current.click()}>
-                                    Procurar Arquivo
-                                </button>
-                                <input
-                                    type="file"
-                                    accept=".csv"
-                                    ref={fileInputRef}
-                                    style={{ display: 'none' }}
-                                    onChange={handleFileChange}
-                                />
-                            </>
-                        ) : (
-                            <div className={styles.fileSelectedInfo}>
-                                <p className={styles.fileName}>📄 {file.name}</p>
-                                <span className={styles.fileSize}>{(file.size / 1024).toFixed(1)} KB</span>
-                                <div className={styles.actions}>
-                                    <button className={styles.uploadBtn} onClick={handleUpload} disabled={loading}>
-                                        {loading ? 'Enviando...' : 'Fazer Upload'}
+                    {activeTab.isPdv ? (
+                        <div className={styles.dropzone} style={{ justifyContent: 'center' }}>
+                            <p style={{ margin: '1rem', color: '#475569' }}>Clique no botão abaixo para iniciar a comunicação remota com seu PDV e injetar os dados no PromoChef de forma imersiva.</p>
+                            <button className={styles.uploadBtn} onClick={handlePdvSync} disabled={loading} style={{ padding: '1.25rem 3rem', fontSize: '1.1rem' }}>
+                                {loading ? '🔄 Sincronizando Banco...' : '⚡ Iniciar Sincronização PDV'}
+                            </button>
+                        </div>
+                    ) : (
+                        <div
+                            className={`${styles.dropzone} ${file ? styles.hasFile : ''}`}
+                            onDragOver={handleDragOver}
+                            onDrop={handleDrop}
+                        >
+                            {!file ? (
+                                <>
+                                    <p>Arraste o arquivo CSV de <b>{activeTab.title}</b> para cá</p>
+                                    <span>ou</span>
+                                    <button className={styles.browseBtn} onClick={() => fileInputRef.current.click()}>
+                                        Procurar Arquivo
                                     </button>
-                                    <button className={styles.clearBtn} onClick={() => setFile(null)} disabled={loading}>
-                                        Trocar
-                                    </button>
+                                    <input
+                                        type="file"
+                                        accept=".csv"
+                                        ref={fileInputRef}
+                                        style={{ display: 'none' }}
+                                        onChange={handleFileChange}
+                                    />
+                                </>
+                            ) : (
+                                <div className={styles.fileSelectedInfo}>
+                                    <p className={styles.fileName}>📄 {file.name}</p>
+                                    <span className={styles.fileSize}>{(file.size / 1024).toFixed(1)} KB</span>
+                                    <div className={styles.actions}>
+                                        <button className={styles.uploadBtn} onClick={handleUpload} disabled={loading}>
+                                            {loading ? 'Enviando...' : 'Fazer Upload'}
+                                        </button>
+                                        <button className={styles.clearBtn} onClick={() => setFile(null)} disabled={loading}>
+                                            Trocar
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    )}
 
                     {result && (
                         <div className={`${styles.resultCard} ${result.sucesso ? styles.success : styles.error}`}>
