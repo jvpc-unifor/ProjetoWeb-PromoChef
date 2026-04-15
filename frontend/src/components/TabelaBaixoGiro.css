@@ -1,0 +1,80 @@
+/* Tabela Personalizada de Baixo Giro - CSS encapsulado pro componente */
+.table-container {
+    background: #fff;
+    padding: 28px 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    margin-bottom: 40px;
+}
+
+.table-header {
+    margin-bottom: 24px;
+}
+
+.table-header h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.table-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.custom-table th {
+    background: #f8fafc;
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #64748b;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.custom-table td {
+    padding: 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    font-size: 15px;
+    vertical-align: middle;
+}
+
+.custom-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Efeito sutil de navegação pelas linhas para interatividade */
+.custom-table tr:hover td {
+    background: #f8fafc;
+}
+
+/* Etiquetas (Badges) visuais para facilitar leitura humana rápida da Ação */
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-badge.danger {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.status-badge.warning {
+    background: #fef3c7;
+    color: #d97706;
+}
