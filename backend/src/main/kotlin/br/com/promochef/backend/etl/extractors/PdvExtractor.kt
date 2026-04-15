@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.sql.DriverManager
 
-
 @Component
 class PdvExtractor {
 
@@ -50,7 +49,7 @@ class PdvExtractor {
             connection.close() 
 
         } catch (erro: Exception) {
-            throw RuntimeException("Falha ao extrair dados do fluxo PDV: \${erro.message}", erro)
+            throw RuntimeException("Falha ao extrair dados do fluxo PDV: ${erro.message}", erro)
         }
         
         return extracao
