@@ -1,69 +1,221 @@
+/* Layout Principal com animação simples de entrada */
 .dashboard {
     max-width: 1200px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease-out;
 }
 
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Cartão de Boas-vindas Premium - usa a cor laranja do projeto #f97316 */
 .welcome-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
     color: #fff;
     padding: 32px;
-    border-radius: 12px;
-    margin-bottom: 24px;
+    border-radius: 16px;
+    margin-bottom: 32px;
+    box-shadow: 0 10px 25px rgba(249, 115, 22, 0.25);
 }
 
 .welcome-card h1 {
     margin: 0 0 8px 0;
     font-size: 28px;
+    font-weight: 700;
 }
 
 .welcome-card p {
     margin: 4px 0;
-    font-size: 14px;
-    opacity: 0.9;
+    font-size: 15px;
+    opacity: 0.95;
 }
 
 .welcome-subtitle {
-    margin-top: 12px !important;
-    padding-top: 12px;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin-top: 16px !important;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+/* Distribuição dos Cartões Numéricos (KPIs) */
 .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    margin-bottom: 36px;
 }
 
 .kpi-card {
     background: #fff;
     padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 20px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Efeito ao passar o mouse: flutuação (dinamismo e interação) */
+.kpi-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
 }
 
 .kpi-icon {
-    font-size: 32px;
-    width: 60px;
-    height: 60px;
-    background: #f5f7fa;
-    border-radius: 12px;
+    font-size: 28px;
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+/* Cores específicas para cada contexto (dinheiro = verde, produtos = azul) */
+.kpi-icon.money { background: #dcfce7; color: #16a34a; }
+.kpi-icon.box { background: #e0e7ff; color: #4f46e5; }
+.kpi-icon.ticket { background: #fef9c3; color: #ca8a04; }
+.kpi-icon.chart { background: #ffedd5; color: #ea580c; }
+
 .kpi-content h3 {
     margin: 0;
-    font-size: 13px;
-    color: #666;
-    font-weight: 500;
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .kpi-value {
-    margin: 4px 0 0 0;
-    font-size: 24px;
+    margin: 6px 0 0 0;
+    font-size: 26px;
     font-weight: 700;
-    color: #333;
+    color: #1e293b;
 }
+
+/* Grade que divide os gráficos em duas colunas, ou se colapsa no mobile */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 24px;
+    margin-bottom: 36px;
+}
+
+.chart-container {
+    background: #fff;
+    padding: 28px 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.chart-container h3 {
+    margin: 0 0 24px 0;
+    font-size: 18px;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.chart-wrapper {
+    margin-top: 16px;
+}
+
+/* Tabela Personalizada de Baixo Giro */
+.table-container {
+    background: #fff;
+    padding: 28px 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    margin-bottom: 40px;
+}
+
+.table-header {
+    margin-bottom: 24px;
+}
+
+.table-header h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.table-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.custom-table th {
+    background: #f8fafc;
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #64748b;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.custom-table td {
+    padding: 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    font-size: 15px;
+    vertical-align: middle;
+}
+
+.custom-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Efeito sutil de navegação pelas linhas */
+.custom-table tr:hover td {
+    background: #f8fafc;
+}
+
+/* Etiquetas (Badges) visuais para facilitar leitura humana */
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-badge.danger {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.status-badge.warning {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+/* Indica pro usuário que a tela está pensando e os dados estão chegando */
+.loading-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 60vh;
+    font-size: 18px;
+    color: #64748b;
+    font-weight: 500;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
