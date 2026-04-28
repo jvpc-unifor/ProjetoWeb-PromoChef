@@ -1,17 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import api from '../../services/api';
 import './Navbar.css';
 
 export default function Navbar({ title, onMenuToggle }) {
     const { user } = useAuth();
     const [showNotifications, setShowNotifications] = useState(false);
+    const [notificacoes, setNotificacoes] = useState([]);
 
-    // Simulação das notificações (Fazer de verdade só na Sprint 04)
-    const notificacoes = [
-        { id: 1, tipo: 'alerta', mensagem: 'Mozzarella vence em 2 dias', lido: false },
-        { id: 2, tipo: 'promocao', mensagem: 'Nova promoção sugerida: Pizza Margherita', lido: false },
-        { id: 3, tipo: 'alerta', mensagem: 'Tomate lote #A123 vence hoje', lido: false },
-    ];
+    useEffect(() => {
+        carregarAlertas();
+    }, []);
+
+    const carregarAlertas = async () => {
+        try {
+            const response = await api.get('/alertas/vencimento');
+            // Mapeia para o formato esperado pelo menu
+            const alertas = response.data.map(alerta => ({
+                id: alerta.id,
+                tipo: 'alerta',
+                mensagem: alerta.mensagem,
+                lido: alerta.visualizado
+            }));
+            setNotificacoes(alertas);
+        } catch (error) {
+            console.error('Erro ao carregar alertas', error);
+        }
+    };
 
     const naoLidas = notificacoes.filter(n => !n.lido).length;
 

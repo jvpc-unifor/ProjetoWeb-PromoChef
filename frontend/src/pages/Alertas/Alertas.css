@@ -1,0 +1,125 @@
+.alertas-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.alertas-header {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #fff;
+    padding: 32px;
+    border-radius: 16px;
+    margin-bottom: 32px;
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.25);
+}
+
+.alertas-header h1 {
+    margin: 0 0 8px 0;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.alertas-header p {
+    margin: 0;
+    font-size: 15px;
+    opacity: 0.95;
+}
+
+.alertas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.alerta-card {
+    background: #fff;
+    border: 1px solid #fee2e2;
+    border-left: 4px solid #ef4444;
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
+}
+
+.alerta-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.alerta-icon {
+    font-size: 24px;
+    background: #fee2e2;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.alerta-content {
+    flex-grow: 1;
+}
+
+.alerta-content h3 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    color: #1e293b;
+}
+
+.alerta-content p {
+    margin: 0 0 12px 0;
+    color: #475569;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.alerta-date {
+    font-size: 12px;
+    color: #94a3b8;
+    display: block;
+}
+
+.btn-visualizar {
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-visualizar:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 64px 24px;
+    background: #fff;
+    border-radius: 16px;
+    border: 2px dashed #e2e8f0;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.empty-state h3 {
+    color: #1e293b;
+    margin: 0 0 8px 0;
+}
+
+.empty-state p {
+    color: #64748b;
+    margin: 0;
+}

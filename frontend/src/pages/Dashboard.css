@@ -218,4 +218,31 @@
     0% { opacity: 0.6; }
     50% { opacity: 1; }
     100% { opacity: 0.6; }
+}
+
+/* Alert Banner */
+.alert-banner {
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.alert-banner.warning {
+    background-color: #fffbeb;
+    border-left: 4px solid #f59e0b;
+}
+
+.alert-banner.warning h3 {
+    color: #b45309;
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alert-banner.warning p {
+    color: #92400e;
+    margin: 0;
 }

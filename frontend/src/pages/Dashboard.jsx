@@ -14,6 +14,7 @@ export default function Dashboard() {
     // Estados para armazenar os retornos da API separadamente
     const [kpis, setKpis] = useState(null);
     const [graficos, setGraficos] = useState(null);
+    const [alertas, setAlertas] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // useEffect roda uma vez quando o componente é montado na tela
@@ -21,14 +22,16 @@ export default function Dashboard() {
         const carregarDashboard = async () => {
             try {
                 // Promise.all executa as chamadas em paralelo (mais rápido)
-                const [kpisRes, vendasRes] = await Promise.all([
+                const [kpisRes, vendasRes, alertasRes] = await Promise.all([
                     api.get('/dashboard/kpis'),
-                    api.get('/dashboard/vendas')
+                    api.get('/dashboard/vendas'),
+                    api.get('/alertas/vencimento')
                 ]);
                 
                 // Salva os resultados no estado para renderizar a tela
                 setKpis(kpisRes.data);
                 setGraficos(vendasRes.data);
+                setAlertas(alertasRes.data);
             } catch (error) {
                 console.error("Erro ao carregar dashboard:", error);
             } finally {
@@ -61,6 +64,14 @@ export default function Dashboard() {
                         : 'Analise suas vendas, alertas e relatórios diários.'}
                 </p>
             </div>
+
+            {/* Cartões de Alertas */}
+            {alertas.length > 0 && (
+                <div className="alert-banner warning">
+                    <h3>⚠️ Atenção: {alertas.length} alerta(s) pendente(s)</h3>
+                    <p>Há lotes próximos do vencimento. Vá para a tela de Alertas para mais detalhes.</p>
+                </div>
+            )}
 
             {/* Cartões Macro - KPIs da API */}
             <div className="kpi-grid">
