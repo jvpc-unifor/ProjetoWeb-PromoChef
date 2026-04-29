@@ -47,4 +47,23 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
             LIMIT 10
             """, nativeQuery = true)
     List<ProdutoRankingDto> findProdutosComBaixoGiro(@Param("dataLimite") LocalDate dataLimite);
+
+    // Interface para mapear o retorno da query nativa de cruzamento de lotes
+    interface ProdutoPromocaoSugestaoDto {
+        Long getProdutoId();
+        Integer getDiasParaVencer();
+    }
+
+    // Busca os produtos cujos ingredientes estão vencendo em até X dias
+    @Query(value = """
+            SELECT 
+                p.id AS produtoId, 
+                MIN(DATEDIFF(l.data_validade, CURDATE())) AS diasParaVencer
+            FROM tb_produto p
+            JOIN tb_ficha_tecnica ft ON p.id = ft.produto_id
+            JOIN tb_lote l ON ft.ingrediente_id = l.ingrediente_id
+            WHERE l.data_validade BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL :dias DAY)
+            GROUP BY p.id
+            """, nativeQuery = true)
+    List<ProdutoPromocaoSugestaoDto> findProdutosComIngredientesVencendoEmAte(@Param("dias") int dias);
 }
