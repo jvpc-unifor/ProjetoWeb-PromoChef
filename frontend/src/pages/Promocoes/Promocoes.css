@@ -1,0 +1,134 @@
+.promocoes-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.promocoes-header {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #fff;
+    padding: 32px;
+    border-radius: 16px;
+    margin-bottom: 32px;
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);
+}
+
+.promocoes-header h1 {
+    margin: 0 0 8px 0;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.promocoes-header p {
+    margin: 0;
+    font-size: 15px;
+    opacity: 0.95;
+}
+
+.promocoes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+.promocao-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+}
+
+.promocao-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.1);
+}
+
+.promocao-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: #f43f5e;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(244, 63, 94, 0.3);
+}
+
+.promocao-content {
+    padding: 24px;
+}
+
+.promocao-content h3 {
+    margin: 0 0 12px 0;
+    font-size: 20px;
+    color: #1e293b;
+    padding-right: 80px; /* espaco pro badge */
+}
+
+.promocao-motivo {
+    color: #64748b;
+    font-size: 14px;
+    background: #f8fafc;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.promocao-preco {
+    font-size: 15px;
+    color: #475569;
+}
+
+.preco-antigo {
+    text-decoration: line-through;
+    color: #94a3b8;
+}
+
+.preco-novo {
+    font-size: 22px;
+    font-weight: bold;
+    color: #10b981;
+}
+
+.promocao-actions {
+    display: flex;
+    padding: 16px;
+    background: #f8fafc;
+    gap: 12px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.btn-ativar, .btn-recusar {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-ativar {
+    background: #10b981;
+    color: white;
+}
+
+.btn-ativar:hover {
+    background: #059669;
+}
+
+.btn-recusar {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.btn-recusar:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}

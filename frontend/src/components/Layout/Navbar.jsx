@@ -14,17 +14,29 @@ export default function Navbar({ title, onMenuToggle }) {
 
     const carregarAlertas = async () => {
         try {
-            const response = await api.get('/alertas/vencimento');
+            const [alertasRes, promocoesRes] = await Promise.all([
+                api.get('/alertas/vencimento'),
+                api.get('/promocoes/sugestoes')
+            ]);
+            
             // Mapeia para o formato esperado pelo menu
-            const alertas = response.data.map(alerta => ({
-                id: alerta.id,
+            const alertas = alertasRes.data.map(alerta => ({
+                id: `alerta-${alerta.id}`,
                 tipo: 'alerta',
                 mensagem: alerta.mensagem,
                 lido: alerta.visualizado
             }));
-            setNotificacoes(alertas);
+
+            const promocoes = promocoesRes.data.map(promo => ({
+                id: `promo-${promo.id}`,
+                tipo: 'promocao',
+                mensagem: `Sugestão de ${promo.descontoPct}% OFF para ${promo.produto.nome}`,
+                lido: false // promoções sugeridas sempre são tratadas como novas no dropdown até serem aceitas/recusadas
+            }));
+
+            setNotificacoes([...alertas, ...promocoes]);
         } catch (error) {
-            console.error('Erro ao carregar alertas', error);
+            console.error('Erro ao carregar notificações', error);
         }
     };
 

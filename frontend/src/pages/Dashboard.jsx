@@ -15,6 +15,7 @@ export default function Dashboard() {
     const [kpis, setKpis] = useState(null);
     const [graficos, setGraficos] = useState(null);
     const [alertas, setAlertas] = useState([]);
+    const [promocoes, setPromocoes] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // useEffect roda uma vez quando o componente é montado na tela
@@ -22,16 +23,18 @@ export default function Dashboard() {
         const carregarDashboard = async () => {
             try {
                 // Promise.all executa as chamadas em paralelo (mais rápido)
-                const [kpisRes, vendasRes, alertasRes] = await Promise.all([
+                const [kpisRes, vendasRes, alertasRes, promocoesRes] = await Promise.all([
                     api.get('/dashboard/kpis'),
                     api.get('/dashboard/vendas'),
-                    api.get('/alertas/vencimento')
+                    api.get('/alertas/vencimento'),
+                    api.get('/promocoes/sugestoes')
                 ]);
                 
                 // Salva os resultados no estado para renderizar a tela
                 setKpis(kpisRes.data);
                 setGraficos(vendasRes.data);
                 setAlertas(alertasRes.data);
+                setPromocoes(promocoesRes.data);
             } catch (error) {
                 console.error("Erro ao carregar dashboard:", error);
             } finally {
@@ -70,6 +73,14 @@ export default function Dashboard() {
                 <div className="alert-banner warning">
                     <h3>⚠️ Atenção: {alertas.length} alerta(s) pendente(s)</h3>
                     <p>Há lotes próximos do vencimento. Vá para a tela de Alertas para mais detalhes.</p>
+                </div>
+            )}
+
+            {/* Cartão de Promoções Sugeridas */}
+            {promocoes.length > 0 && (
+                <div className="alert-banner promo">
+                    <h3>🏷️ Nova Sugestão de Promoção</h3>
+                    <p>O Motor PromoChef identificou {promocoes.length} oportunidade(s) de desconto. Vá em Promoções para ativar.</p>
                 </div>
             )}
 

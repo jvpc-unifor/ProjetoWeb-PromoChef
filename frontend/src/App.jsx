@@ -6,9 +6,9 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Importacao from './pages/Importacao/Importacao';
 import Alertas from './pages/Alertas/Alertas';
+import Promocoes from './pages/Promocoes/Promocoes';
 
 // Serão feitas nas próximas Sprints é só para estruturar tudo.
-function Promocoes() { return <div><h2>🏷️ Promoções</h2></div>; }
 function Relatorios() { return <div><h2>📈 Relatórios</h2></div>; }
 function Usuarios() { return <div><h2>👥 Usuários (ADMIN)</h2></div>; }
 function Configuracoes() { return <div><h2>⚙️ Configurações (ADMIN)</h2></div>; }
