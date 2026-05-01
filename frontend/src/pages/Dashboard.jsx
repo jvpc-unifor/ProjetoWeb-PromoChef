@@ -7,6 +7,7 @@ import {
     BarChart, Bar
 } from 'recharts';
 import TabelaBaixoGiro from '../components/TabelaBaixoGiro';
+import PrevisaoDemanda from '../components/PrevisaoDemanda/PrevisaoDemanda';
 
 export default function Dashboard() {
     const { user } = useAuth();
@@ -166,6 +167,9 @@ export default function Dashboard() {
             {/* 3. Tabela de Baixo Giro renderizada por meio do novo componente encapsulado */}
             <TabelaBaixoGiro dados={graficos?.produtosBaixoGiro} formatarMoeda={formatarMoeda} />
             
+            {/* 4. Motor de Previsão de Demanda (F07) */}
+            <PrevisaoDemanda />
+
         </div>
     );
 }

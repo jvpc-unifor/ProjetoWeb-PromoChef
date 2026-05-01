@@ -1,0 +1,112 @@
+.container {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.header {
+    margin-bottom: 24px;
+}
+
+.header h2 {
+    font-size: 20px;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.header p {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.loading {
+    padding: 40px;
+    text-align: center;
+    color: #f97316;
+    font-weight: 600;
+}
+
+.contentGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+@media (min-width: 1024px) {
+    .contentGrid {
+        grid-template-columns: 1fr 1.5fr; /* Cards ocupam menos espaço que o gráfico */
+    }
+}
+
+.cardsSection h3, .chartSection h3 {
+    font-size: 16px;
+    color: #334155;
+    margin-bottom: 16px;
+}
+
+.cardsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.productCard {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 4px solid #f97316;
+}
+
+.productCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.cardHeader {
+    margin-bottom: 12px;
+}
+
+.productName {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 15px;
+}
+
+.expectedValue {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.unit {
+    font-size: 13px;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.chartSection {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.chartWrapper {
+    width: 100%;
+    min-height: 300px;
+}
+
+.noData {
+    color: #94a3b8;
+    font-style: italic;
+    padding: 16px 0;
+}
