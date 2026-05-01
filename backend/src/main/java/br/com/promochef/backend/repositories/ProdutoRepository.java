@@ -66,4 +66,48 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
             GROUP BY p.id
             """, nativeQuery = true)
     List<ProdutoPromocaoSugestaoDto> findProdutosComIngredientesVencendoEmAte(@Param("dias") int dias);
+
+    // Interface para mapear o retorno da query nativa de rentabilidade (F08)
+    interface RentabilidadeDto {
+        Long getProdutoId();
+        String getProdutoNome();
+        Double getPrecoVenda();
+        Double getCustoProducao();
+        Double getLucroBruto();
+        Double getMargemLucroPct();
+    }
+
+    // Retorna a margem de lucro de cada produto com base no custo médio do estoque
+    @Query(value = """
+            WITH CustoIngrediente AS (
+                SELECT 
+                    ingrediente_id,
+                    AVG(custo_unitario) as custo_medio
+                FROM tb_lote
+                GROUP BY ingrediente_id
+            ),
+            CustoProduto AS (
+                SELECT 
+                    ft.produto_id,
+                    SUM(ft.quantidade_usada * ci.custo_medio) as custo_producao
+                FROM tb_ficha_tecnica ft
+                JOIN CustoIngrediente ci ON ft.ingrediente_id = ci.ingrediente_id
+                GROUP BY ft.produto_id
+            )
+            SELECT 
+                p.id AS produtoId,
+                p.nome AS produtoNome,
+                p.preco AS precoVenda,
+                COALESCE(cp.custo_producao, 0) AS custoProducao,
+                (p.preco - COALESCE(cp.custo_producao, 0)) AS lucroBruto,
+                CASE 
+                    WHEN p.preco > 0 THEN ROUND(((p.preco - COALESCE(cp.custo_producao, 0)) / p.preco) * 100, 2)
+                    ELSE 0 
+                END AS margemLucroPct
+            FROM tb_produto p
+            LEFT JOIN CustoProduto cp ON p.id = cp.produto_id
+            WHERE p.ativo = TRUE
+            ORDER BY margemLucroPct DESC
+            """, nativeQuery = true)
+    List<RentabilidadeDto> findRentabilidadeProdutos();
 }
