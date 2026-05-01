@@ -8,6 +8,7 @@ import {
 } from 'recharts';
 import TabelaBaixoGiro from '../components/TabelaBaixoGiro';
 import PrevisaoDemanda from '../components/PrevisaoDemanda/PrevisaoDemanda';
+import Rentabilidade from '../components/Rentabilidade/Rentabilidade';
 
 export default function Dashboard() {
     const { user } = useAuth();
@@ -169,6 +170,9 @@ export default function Dashboard() {
             
             {/* 4. Motor de Previsão de Demanda (F07) */}
             <PrevisaoDemanda />
+
+            {/* 5. Tabela de Rentabilidade (F08) */}
+            <Rentabilidade />
 
         </div>
     );
