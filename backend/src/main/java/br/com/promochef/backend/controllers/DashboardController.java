@@ -13,19 +13,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// Recebe as requisições de consulta para popular os gráficos da F03
+// Recebe as requisições de consulta para popular os gráficos F03
 @RestController
 @RequestMapping("/dashboard")
 public class DashboardController {
 
     private final DashboardService dashboardService;
+    private final br.com.promochef.backend.services.PrevisaoDemandaService previsaoDemandaService;
 
-    // Injeção de dependência via construtor
-    public DashboardController(DashboardService dashboardService) {
+    // Injeção de dependência via construtor (recomendado pelo Spring)
+    public DashboardController(DashboardService dashboardService, br.com.promochef.backend.services.PrevisaoDemandaService previsaoDemandaService) {
         this.dashboardService = dashboardService;
+        this.previsaoDemandaService = previsaoDemandaService;
     }
 
-    //Ponto de acesso para os KPIs macro (cartões do topo)
+    // Ponto de acesso para os KPIs macro (cartões do topo)
     @GetMapping("/kpis")
     public ResponseEntity<DashboardKpisDto> getKpis() {
         DashboardKpisDto kpis = dashboardService.obterKpisDoMes();
@@ -48,5 +50,11 @@ public class DashboardController {
         response.put("produtosBaixoGiro", baixoGiro);
 
         return ResponseEntity.ok(response);
+    }
+
+    // F07: Ponto de acesso para o motor de previsão de demanda
+    @GetMapping("/previsao")
+    public ResponseEntity<List<br.com.promochef.backend.repositories.VendaRepository.PrevisaoDemandaDto>> getPrevisaoDemanda() {
+        return ResponseEntity.ok(previsaoDemandaService.obterPrevisaoDemanda());
     }
 }
